@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invitation</title>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+}
+
+body{
+  height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  overflow:hidden;
+  font-family:system-ui;
+
+  /* 🌈 nền mới */
+  background: #fce5c2;
+}
+
+/* 🎆 canvas confetti */
+canvas{
+  position:fixed;
+  top:0;
+  left:0;
+  pointer-events:none;
+}
+
+/* ===== SCENE ===== */
+.scene{
+  position:relative;
+  width:380px;
+  height:520px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+/* ===== THIỆP ===== */
+.card{
+  position:absolute;
+  width:min(360px,85vw);
+  aspect-ratio:1/1.414;
+
+  transform:translateY(100px) scale(.85);
+  opacity:0;
+
+  transition:1s ease;
+
+  z-index:1;
+}
+
+.card img{
+  width:100%;
+  border-radius:22px;
+
+  box-shadow:0 30px 80px rgba(0,0,0,.25);
+}
+
+/* ===== PHONG BÌ ===== */
+.envelope{
+  position:absolute;
+  bottom:0;
+  width:340px;
+  height:220px;
+  z-index:5;
+
+  transition:1s ease;
+}
+
+/* thân */
+.base{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(135deg,#fffdf7,#ece7dd);
+  border-radius:16px;
+  box-shadow:0 20px 60px rgba(0,0,0,.2);
+}
+
+/* nắp */
+.flap{
+  position:absolute;
+  inset:0;
+
+  background:linear-gradient(180deg,#ffffff,#e6e0d6);
+
+  /* 🎯 nắp tam giác nhưng có bo góc */
+  clip-path: polygon(
+    2% 2%,
+    98% 2%,
+    50% 58%,
+    50% 58%
+  );
+
+  transform-origin: top;
+  transition:0.9s ease;
+  z-index:3;
+}
+
+/* seal */
+.seal{
+  position:absolute;
+  left:50%;
+  top:90px;
+  transform:translateX(-50%);
+
+  width:62px;
+  height:62px;
+  border-radius:50%;
+  border:none;
+
+  background:#ff4d4d;
+  color:white;
+  font-weight:700;
+  cursor:pointer;
+
+  z-index:10;
+  box-shadow:0 10px 25px rgba(255,70,70,.35);
+}
+
+/* label */
+.label{
+  position:absolute;
+  bottom:25px;
+  width:100%;
+  text-align:center;
+  font-size:12px;
+  letter-spacing:3px;
+  color:#666;
+}
+
+/* ===== OPEN STATE ===== */
+
+.scene.open .flap{
+  transform:rotateX(180deg);
+}
+
+.scene.open .card{
+  z-index:50;
+}
+
+.scene.open .envelope{
+  z-index:1;
+}
+
+.scene.open .card{
+  transform:translateY(-140px) scale(1);
+  opacity:1;
+}
+
+.scene.open .envelope{
+  transform:translateY(60px);
+  opacity:0.25;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:420px){
+  .scene{
+    transform:scale(.9);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="confetti"></canvas>
+
+<audio id="music" src="music.mp3"></audio>
+
+<div class="scene" id="scene">
+
+  <!-- 🎴 THIỆP -->
+  <div class="card">
+    <img src="birthday.png">
+  </div>
+
+  <!-- ✉️ PHONG BÌ -->
+  <div class="envelope">
+    <div class="base"></div>
+    <div class="flap"></div>
+
+    <button class="seal" onclick="openCard()">OPEN</button>
+
+    <div class="label">INVITATION</div>
+  </div>
+
+</div>
+
+<script>
+
+/* ===== OPEN ===== */
+function openCard(){
+  document.getElementById("scene").classList.add("open");
+
+  // 🎵 nhạc (nhẹ)
+  const music = document.getElementById("music");
+  music.volume = 0.5;
+  music.play().catch(()=>{});
+
+  // 🎆 confetti nhẹ
+  startConfetti();
+}
+
+/* ===== CONFETTI CLEAN VERSION ===== */
+
+const canvas = document.getElementById("confetti");
+const ctx = canvas.getContext("2d");
+
+canvas.width = innerWidth;
+canvas.height = innerHeight;
+
+let pieces = [];
+
+function startConfetti(){
+
+  pieces = [];
+
+  // ít lại
+  for(let i=0;i<40;i++){
+    pieces.push({
+      x:Math.random()*canvas.width,
+      y:Math.random()*-canvas.height,
+      r:Math.random()*2+1,   // nhỏ
+      d:Math.random()*2+0.5, // nhẹ
+      color:`hsl(${Math.random()*360},70%,60%)`
+    });
+  }
+
+  animate();
+}
+
+function animate(){
+
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  pieces.forEach(p=>{
+
+    ctx.beginPath();
+    ctx.fillStyle=p.color;
+
+    ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    ctx.fill();
+
+    // 🌬 bay nhẹ
+    p.y += p.d * 0.6;
+    p.x += Math.sin(p.y * 0.01) * 0.4;
+
+  });
+
+  requestAnimationFrame(animate);
+}
+
+</script>
+
+</body>
+</html>
